@@ -1,16 +1,17 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { fixturesApi } from '../services/api';
+import { fixturesApi, Fixture } from '../services/api';
 import './LiveScore.css';
 
 const LiveScores = () => {
-  const [fixtures, setFixtures] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [streamCleanup, setStreamCleanup] = useState(null);
+  const [fixtures, setFixtures] = useState<Fixture[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isStreaming, setIsStreaming] = useState<boolean>(false);
+  const [streamCleanup, setStreamCleanup] = useState<(() => void) | null>(null);
 
     // Load live fixtures
-    const loadLiveFixtures = async () => {
+    const loadLiveFixtures = async (): Promise<void> => {
+      stopStream();
       setLoading(true);
       setError(null);
       try {
@@ -24,8 +25,8 @@ const LiveScores = () => {
     };
 
     // Load today's fixtures
-    const loadTodayFixtures = async () => {
-      console.log("Loading today's fixtures");
+    const loadTodayFixtures = async (): Promise<void> => {
+      stopStream();
       setLoading(true);
       setError(null);
       try {
@@ -40,25 +41,25 @@ const LiveScores = () => {
 
     // Start streaming
     const startStream = () => {
-      stopStream();
       setIsStreaming(true);
 
       const cleanup = fixturesApi.streamLiveFixtures(
-        (data) => {
+        (data: Fixture[]) => {
           setFixtures(data);
           setError(null);
+          setLoading(false);
         },
-        (err) => {
+        (err: Event) => {
           setError("Streaming error occurred");
           setIsStreaming(false);
+          setLoading(false);
         }
       );
       setStreamCleanup(() => cleanup);
     };
 
     // Stop streaming
-    const stopStream = useCallback(
-      () => {
+    const stopStream = useCallback((): void => {
       if (streamCleanup) {
         streamCleanup();
         setStreamCleanup(null);
@@ -66,14 +67,24 @@ const LiveScores = () => {
       setIsStreaming(false);
       }, [streamCleanup]);
 
-    const getFixtureStatus = (statusShort) => {
+    // Load today's fixtures on component mount
+    useEffect(() => {
+      loadTodayFixtures();
+    }, []);
+    
+    // Cleanup on unmount
+    useEffect(() => {
+      return () => stopStream();
+    }, [stopStream]);
+    
+    const getFixtureStatus = (statusShort: string): string => {
       if (['1H', '2H', 'HT', 'ET', 'P'].includes(statusShort)) return 'live';
       if (['FT', 'AET', 'PEN'].includes(statusShort)) return 'finished';
       return 'scheduled';
     };
 
-    const getStatusText = (fixture) => {
-      const statusMap = {
+    const getStatusText = (fixture: Fixture): string => {
+      const statusMap: Record<string, string> = {
         '1H': `${fixture.elapsed}' - First Half`,
         '2H': `${fixture.elapsed}' - Second Half`,
         'HT': 'Half Time',
@@ -89,21 +100,10 @@ const LiveScores = () => {
       return statusMap[fixture.statusShort] || fixture.status;
     };
 
-    // Load today's fixtures on component mount
-    useEffect(() => {
-      loadTodayFixtures();
-    }, []);
-    
-    // Cleanup on unmount
-    useEffect(() => {
-      return () => stopStream();
-    }, [stopStream]);
-
   return (
     <div className="live-scores-container">
       <header>
         <h1>⚽ Live Football Scores</h1>
-        <p className="subtitle">Real-time Fixture Updates</p>
       </header>
 
       <div className="controls">
@@ -147,7 +147,7 @@ const LiveScores = () => {
                 <div className="team-name" > {fixture.homeTeam}</div>
                 <div className="score">{fixture.homeScore}</div>
               </div>
-              <div className="vs">-</div>
+              <div className="vs"><br></br>-</div>
               <div className="team">
                 <div className="team-name">{fixture.awayTeam}</div>
                 <div className="score">{fixture.awayScore}</div>

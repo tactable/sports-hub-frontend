@@ -1,8 +1,8 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
 import LiveScore from './components/LiveScore';
+import './App.css';
 
-function App() {
+const App: React.FC = () => {
   return (
     <div className="App">
       <LiveScore />
