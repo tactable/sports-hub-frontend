@@ -55,7 +55,7 @@ const LiveScores = () => {
           setLoading(false);
         }
       );
-      setStreamCleanup(() => cleanup);
+      setStreamCleanup(cleanup);
     };
 
     // Stop streaming
