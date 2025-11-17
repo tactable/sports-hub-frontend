@@ -10,7 +10,6 @@ const apiClient = axios.create({
     withCredentials: true,
 });
 
-// Type definitions
 export interface Fixture {
   id: number;
   homeTeam: string;
@@ -23,6 +22,25 @@ export interface Fixture {
   leagueName: string;
   country: string;
   live: boolean;
+}
+
+export interface FixtureStats {
+  shotsOnGoal: number;
+  shotsOffGoal: number;
+  shotsInsideBox: number;
+  shotsOutsideBox: number;
+  totalShots: number;
+  blockedShots: number;
+  fouls: number;
+  cornerKicks: number;
+  offsides: number;
+  ballPossession: string;
+  yellowCards: number;
+  redCards: number;
+  goalkeeperSaves: number;
+  totalPasses: number;
+  passesAccurate: number;
+  passesPercent: string;
 }
 
 // API Methods
@@ -45,6 +63,11 @@ export const fixturesApi = {
             console.error("Error fetching today's fixtures:", error);
             throw error;
         }
+    },
+
+    getFixtureStats: async (fixtureId: number): Promise<FixtureStats[]> => {
+      const response = await apiClient.get<FixtureStats[]>(`/fixtures/${fixtureId}/stats`);
+      return response.data;
     },
 
     // Stream live matches using Server Sent Events (SSE)

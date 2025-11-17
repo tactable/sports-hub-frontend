@@ -1,10 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { fixturesApi, Fixture } from '../services/api';
+import { fixturesApi, Fixture, FixtureStats } from '../services/api';
 import './LiveScore.css';
 
 const LiveScores = () => {
   const [fixtures, setFixtures] = useState<Fixture[]>([]);
+  const [selectedFixture, setSelectedFixture] = useState<Fixture | null>(null);
+  const [fixtureStats, setFixtureStats] = useState<FixtureStats[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [statsLoading, setStatsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const [streamCleanup, setStreamCleanup] = useState<(() => void) | null>(null);
@@ -12,6 +15,8 @@ const LiveScores = () => {
     // Load live fixtures
     const loadLiveFixtures = async (): Promise<void> => {
       stopStream();
+      setSelectedFixture(null);
+      setFixtureStats(null);
       setLoading(true);
       setError(null);
       try {
@@ -27,6 +32,8 @@ const LiveScores = () => {
     // Load today's fixtures
     const loadTodayFixtures = async (): Promise<void> => {
       stopStream();
+      setSelectedFixture(null);
+      setFixtureStats(null);
       setLoading(true);
       setError(null);
       try {
@@ -36,6 +43,25 @@ const LiveScores = () => {
         setError("Failed to load today's fixtures");
       } finally {
         setLoading(false);
+      }
+    };
+
+    const handleFixtureClick = async (fixture: Fixture): Promise<void> => {
+      setSelectedFixture(fixture);
+      setStatsLoading(true);
+      setError(null);
+      try {
+        const stats = await fixturesApi.getFixtureStats(fixture.id);
+        if (Array.isArray(stats)) {
+          setFixtureStats(stats);
+        } else {
+          throw new Error("Invalid stats data");
+        }
+      } catch (err) {
+        setFixtureStats(null);
+        setError("Failed to load fixture stats");
+      } finally {
+        setStatsLoading(false);
       }
     };
 
@@ -65,7 +91,7 @@ const LiveScores = () => {
         setStreamCleanup(null);
       }
       setIsStreaming(false);
-      }, [streamCleanup]);
+    }, [streamCleanup]);
 
     // Load today's fixtures on component mount
     useEffect(() => {
@@ -140,8 +166,9 @@ const LiveScores = () => {
           <div 
             key={fixture.id} 
             className={`fixture-card ${fixture.live ? 'live' : ''}`}
+            onClick={() => handleFixtureClick(fixture)}
+            style={{ cursor: 'pointer' }}
           >
-
             <div className="teams">
               <div className="team">
                 <div className="team-name" > {fixture.homeTeam}</div>
@@ -165,6 +192,111 @@ const LiveScores = () => {
           </div>
         ))}
       </div>
+    {selectedFixture && (
+      <div className="fixture-stats-modal">
+        <h2>
+          Stats for {selectedFixture.homeTeam} vs {selectedFixture.awayTeam}
+        </h2>
+        {statsLoading && <div>Loading stats...</div>}
+        {!statsLoading && fixtureStats && fixtureStats.length === 2 ? (
+          <table className="stats-table">
+            <thead>
+              <tr>
+                <th>{selectedFixture.homeTeam}</th>
+                <th>Team Stats</th>
+                <th>{selectedFixture.awayTeam}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{fixtureStats[0]?.shotsOnGoal ?? 0}</td>
+                <td>Shots on Goal</td>
+                <td>{fixtureStats[1]?.shotsOnGoal ?? 0}</td>
+              </tr>
+              <tr>
+                <td>{fixtureStats[0]?.shotsOffGoal ?? 0}</td>
+                <td>Shots off Goal</td>
+                <td>{fixtureStats[1]?.shotsOffGoal ?? 0}</td>
+              </tr>
+              <tr>
+                <td>{fixtureStats[0]?.shotsInsideBox ?? 0}</td>
+                <td>Shots inside box</td>
+                <td>{fixtureStats[1]?.shotsInsideBox ?? 0}</td>
+              </tr>
+              <tr>
+                <td>{fixtureStats[0]?.shotsOutsideBox ?? 0}</td>
+                <td>Shots outside box</td>
+                <td>{fixtureStats[1]?.shotsOutsideBox ?? 0}</td>
+              </tr>
+              <tr>
+                <td>{fixtureStats[0]?.totalShots ?? 0}</td>
+                <td>Total Shots</td>
+                <td>{fixtureStats[1]?.totalShots ?? 0}</td>
+              </tr>
+              <tr>
+                <td>{fixtureStats[0]?.blockedShots ?? 0}</td>
+                <td>Blocked Shots</td>
+                <td>{fixtureStats[1]?.blockedShots ?? 0}</td>
+              </tr>
+              <tr>
+                <td>{fixtureStats[0]?.fouls ?? 0}</td>
+                <td>Fouls</td>
+                <td>{fixtureStats[1]?.fouls ?? 0}</td>
+              </tr>
+              <tr>
+                <td>{fixtureStats[0]?.cornerKicks ?? 0}</td>
+                <td>Corner Kicks</td>
+                <td>{fixtureStats[1]?.cornerKicks ?? 0}</td>
+              </tr>
+              <tr>
+                <td>{fixtureStats[0]?.offsides ?? 0}</td>
+                <td>Offsides</td>
+                <td>{fixtureStats[1]?.offsides ?? 0}</td>
+              </tr>
+              <tr>
+                <td>{fixtureStats[0]?.ballPossession ?? '0%'}</td>
+                <td>Ball Possession</td>
+                <td>{fixtureStats[1]?.ballPossession ?? '0%'}</td>
+              </tr>
+              <tr>
+                <td>{fixtureStats[0]?.yellowCards ?? 0}</td>
+                <td>Yellow Cards</td>
+                <td>{fixtureStats[1]?.yellowCards ?? 0}</td>
+              </tr>
+              <tr>
+                <td>{fixtureStats[0]?.redCards ?? 0}</td>
+                <td>Red Cards</td>
+                <td>{fixtureStats[1]?.redCards ?? 0}</td>
+              </tr>
+              <tr>
+                <td>{fixtureStats[0]?.goalkeeperSaves ?? 0}</td>
+                <td>Goalkeeper Saves</td>
+                <td>{fixtureStats[1]?.goalkeeperSaves ?? 0}</td>
+              </tr>
+              <tr>
+                <td>{fixtureStats[0]?.totalPasses ?? 0}</td>
+                <td>Total passes</td>
+                <td>{fixtureStats[1]?.totalPasses ?? 0}</td>
+              </tr>
+              <tr>
+                <td>{fixtureStats[0]?.passesAccurate ?? 0}</td>
+                <td>Passes accurate</td>
+                <td>{fixtureStats[1]?.passesAccurate ?? 0}</td>
+              </tr>
+              <tr>
+                <td>{fixtureStats[0]?.passesPercent ?? '0%'}</td>
+                <td>Passes %</td>
+                <td>{fixtureStats[1]?.passesPercent ?? '0%'}</td>
+              </tr>
+            </tbody>
+          </table>
+        ) : (
+          <div>No stats available for this fixture</div>
+        )}
+        <br></br>
+        <button onClick={() => setSelectedFixture(null)}>Close</button>
+      </div>
+      )}
     </div>
   );
 };

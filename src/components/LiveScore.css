@@ -199,6 +199,25 @@ button:disabled {
   color: white;
 }
 
+.fixture-stats-modal {
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  z-index: 9999;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+}
+
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  background: #fff;
+}
+
 .live-indicator {
   display: inline-block;
   width: 8px;
