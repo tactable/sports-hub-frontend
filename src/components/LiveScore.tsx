@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { fixturesApi, Fixture, FixtureStats } from '../services/api';
 import './LiveScore.css';
 
@@ -10,7 +10,7 @@ const LiveScores = () => {
   const [statsLoading, setStatsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
-  const [streamCleanup, setStreamCleanup] = useState<(() => void) | null>(null);
+  const streamCleanup = useRef<(() => void) | null>(null);
 
     // Load live fixtures
     const loadLiveFixtures = async (): Promise<void> => {
@@ -81,17 +81,17 @@ const LiveScores = () => {
           setLoading(false);
         }
       );
-      setStreamCleanup(cleanup);
+      streamCleanup.current = cleanup;
     };
 
     // Stop streaming
-    const stopStream = useCallback((): void => {
-      if (streamCleanup) {
-        streamCleanup();
-        setStreamCleanup(null);
+    const stopStream = (): void => {
+      if (streamCleanup.current) {
+        streamCleanup.current();
+        streamCleanup.current = null;
       }
       setIsStreaming(false);
-    }, [streamCleanup]);
+    };
 
     // Load today's fixtures on component mount
     useEffect(() => {
@@ -101,7 +101,7 @@ const LiveScores = () => {
     // Cleanup on unmount
     useEffect(() => {
       return () => stopStream();
-    }, [stopStream]);
+    }, []);
     
     const getFixtureStatus = (statusShort: string): string => {
       if (['1H', '2H', 'HT', 'ET', 'P'].includes(statusShort)) return 'live';

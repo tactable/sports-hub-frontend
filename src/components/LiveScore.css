@@ -58,12 +58,16 @@ button:disabled {
   margin-bottom: 20px;
   padding: 10px;
   background: rgba(255,255,255,0.2);
-  border-radius: 10px;
+  border-radius: 15px;
 }
 
 .status.streaming {
   background: rgba(255, 71, 87);
   animation: pulse 2s infinite;
+  width: fit-content;
+  text-align: center;
+  margin: 0 auto;
+  padding: 10px;
 }
 
 .error {
@@ -209,6 +213,8 @@ button:disabled {
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 .stats-table {
