@@ -156,14 +156,32 @@ button:disabled {
 
 .team {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
+  gap: 8px;
+}
+
+.team-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.team-logo {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .team-name {
   font-size: 16px;
   font-weight: 600;
   color: #333;
-  margin-bottom: 10px;
+  margin: 0;
 }
 
 .score {
@@ -207,6 +225,7 @@ button:disabled {
   position: fixed;
   top: 10%;
   left: 50%;
+  width: 40%;
   transform: translateX(-50%);
   background: #fff;
   z-index: 9999;
@@ -217,11 +236,17 @@ button:disabled {
   overflow-y: auto;
 }
 
+.fixture-status.live {
+  color: #ff4757;
+  font-weight: bold;
+}
+
 .stats-table {
   width: 100%;
   border-collapse: collapse;
   margin: 1rem 0;
   background: #fff;
+  table-layout: fixed;
 }
 
 .live-indicator {
@@ -237,4 +262,50 @@ button:disabled {
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.3; }
+}
+
+.team-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.team-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 40%
+}
+
+.team-logo-header {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.team-name-header {
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  overflow-y: auto;
+}
+
+.score-header {
+  font-size: 20px;
+  margin: 0 20px;
+}
+
+.score-status-header {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.score-status-header.live {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #ff4757;
 }

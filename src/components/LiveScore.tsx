@@ -111,11 +111,11 @@ const LiveScores = () => {
 
     const getStatusText = (fixture: Fixture): string => {
       const statusMap: Record<string, string> = {
-        '1H': `${fixture.elapsed}' - First Half`,
-        '2H': `${fixture.elapsed}' - Second Half`,
+        '1H': `1st Half - ${fixture.elapsed}'`,
+        '2H': `2nd Half - ${fixture.elapsed}'`,
         'HT': 'Half Time',
         'FT': 'Full Time',
-        'ET': `${fixture.elapsed}' - Extra Time`,
+        'ET': `Extra Time - ${fixture.elapsed}'`,
         'P': 'Penalties',
         'AET': 'After Extra Time',
         'PEN': 'Penalties Finished',
@@ -171,12 +171,32 @@ const LiveScores = () => {
           >
             <div className="teams">
               <div className="team">
-                <div className="team-name" > {fixture.homeTeam}</div>
+                <div className="team-info">
+                  <img 
+                    src={fixture.homeTeamLogo} 
+                    alt={`${fixture.homeTeam} logo`}
+                    className="team-logo"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                  <div className="team-name">{fixture.homeTeam}</div>
+                </div>
                 <div className="score">{fixture.homeScore}</div>
               </div>
               <div className="vs"><br></br>-</div>
               <div className="team">
-                <div className="team-name">{fixture.awayTeam}</div>
+                <div className="team-info">
+                  <div className="team-name">{fixture.awayTeam}</div>
+                  <img 
+                    src={fixture.awayTeamLogo} 
+                    alt={`${fixture.awayTeam} logo`}
+                    className="team-logo"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                </div>
                 <div className="score">{fixture.awayScore}</div>
               </div>
             </div>
@@ -195,16 +215,31 @@ const LiveScores = () => {
     {selectedFixture && (
       <div className="fixture-stats-modal">
         <h2>
-          Stats for {selectedFixture.homeTeam} vs {selectedFixture.awayTeam}
+          <div className="team-header">
+            <div className="team-column">
+              <img src={selectedFixture.homeTeamLogo} alt={`${selectedFixture.homeTeam} logo`} className="team-logo-header" />
+              <div className="team-name-header">{selectedFixture.homeTeam}</div>
+            </div>
+            <div className="score-header">
+              {selectedFixture.homeScore} - {selectedFixture.awayScore}
+              <div className={`score-status-header ${getFixtureStatus(selectedFixture.statusShort) === 'live' ? 'live' : ''}`}>
+                {getStatusText(selectedFixture)}
+              </div>
+            </div>
+            <div className="team-column">
+              <img src={selectedFixture.awayTeamLogo} alt={`${selectedFixture.awayTeam} logo`} className="team-logo-header" />
+              <div className="team-name-header">{selectedFixture.awayTeam}</div>
+            </div>
+          </div>
         </h2>
         {statsLoading && <div>Loading stats...</div>}
         {!statsLoading && fixtureStats && fixtureStats.length === 2 ? (
           <table className="stats-table">
             <thead>
               <tr>
-                <th>{selectedFixture.homeTeam}</th>
-                <th>Team Stats</th>
-                <th>{selectedFixture.awayTeam}</th>
+                <th></th>
+                <th>Team Statistics</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
